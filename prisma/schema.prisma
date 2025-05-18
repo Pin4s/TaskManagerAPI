@@ -8,9 +8,99 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id String @id @default(uuid()) 
-  name String @db.VarChar(100)
-  email String @unique @db.VarChar(150)
-  password String
+model Users {
+  id       String @id @default(uuid())
+  name     String @db.VarChar(100)
+  email    String @unique @db.VarChar(150)
+  password String @db.VarChar(255)
+
+  role Role @default(member)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  historyTask TasksHistory[]
+  teamMembers TeamMembers[]
+  assignedTo  Tasks[]
+
+  @@map("users")
+}
+
+model Teams {
+  id          String   @id @default(uuid())
+  name        String   @db.VarChar(100)
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  members TeamMembers[]
+  tasks   Tasks[]
+
+  @@map("teams")
+}
+
+model TeamMembers {
+  id     String @id @default(uuid())
+  user   Users  @relation(fields: [userId], references: [id])
+  userId String @map("user_id")
+  team   Teams  @relation(fields: [teamId], references: [id])
+  teamId String @map("team_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([teamId])
+  @@map("team_members")
+}
+
+model Tasks {
+  id          String   @id @default(uuid())
+  title       String   @db.VarChar(200)
+  description String
+  status      Status
+  priority    Priority
+  assigned    Users    @relation(fields: [assignedTo], references: [id])
+  assignedTo  String   @map("assigned_to")
+  team        Teams    @relation(fields: [teamId], references: [id])
+  teamId      String   @map("team_id")
+
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+
+  TasksHistory TasksHistory[]
+
+  @@index([assignedTo])
+  @@index([teamId])
+  @@map("tasks")
+}
+
+model TasksHistory {
+  id        String @id @default(uuid())
+  task      Tasks  @relation(fields: [taskId], references: [id])
+  taskId    String @map("task_id")
+  changerId Users  @relation(fields: [changedBy], references: [id])
+  changedBy String @map("changed_by")
+
+  oldStatus Status @map("old_status")
+  newStatus Status @map("new_status")
+
+  @@index([taskId])
+  @@index([changedBy])
+}
+
+enum Priority {
+  high
+  medium
+  low
+}
+
+enum Status {
+  pending
+  inProgress @map("in_progress")
+  completed
+}
+
+enum Role {
+  admin
+  member
 }
