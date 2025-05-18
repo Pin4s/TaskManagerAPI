@@ -1,6 +1,8 @@
 import { Response, Request, NextFunction } from "express"
 import { z } from 'zod'
 import { prisma } from '@/database/prisma'
+import { AppError } from "@/utils/AppError"
+import { hash } from "bcrypt"
 
 class RegisterController {
     async create(req: Request, res: Response) {
@@ -17,10 +19,23 @@ class RegisterController {
             where: { email }
         })
 
-        
+        if (sameEmail) {
+            throw new AppError("An user with this email has already exist", 409)
+        }
 
+        const hashedPassword = await hash(password, 8)
 
-        return res.json({ message: "User created" })
+        const user = await prisma.users.create({
+            data: {
+                name,
+                email,
+                password: hashedPassword
+            }
+        })
+
+        const { password: _, ...userWithoutPassword } = user
+
+        return res.status(201).json({ message: "user created!", userWithoutPassword })
     }
 }
 
