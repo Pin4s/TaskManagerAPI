@@ -67,7 +67,45 @@ class TeamsAdministrationController {
         return res.json({ team })
     }
 
-    
+    async index(req: Request, res: Response, next: NextFunction){
+        const teams = await prisma.teams.findMany({
+            select:{
+                name: true,
+                description: true,
+                id: true,
+                createdAt: true,
+                updatedAt: true
+            }
+        })
+
+        return res.json(teams)
+    }
+
+    async update(req: Request, res: Response, next: NextFunction) {
+        //ONLY for Update Name and Desc.
+
+        const bodySchema = z.object({
+            name: z.string().min(3).max(100),
+            description: z.string(),
+        })
+
+        const paramsSchema = z.object({
+            id: z.string().uuid()
+        })
+
+        const { name, description } = bodySchema.parse(req.body)
+        const { id } = paramsSchema.parse(req.params)
+
+        const update = await prisma.teams.update({
+            data: {
+                name,
+                description
+            },
+            where: { id }
+        })
+
+        return res.json({update})
+    }
 }
 
 export { TeamsAdministrationController }

@@ -9,7 +9,8 @@ const teamsAdministrationController = new TeamsAdministrationController
 teamsAdministrationRoute.use(ensureAuthenticated)
 teamsAdministrationRoute.use(verifyAuthorization(["admin"]))
 
+teamsAdministrationRoute.get("/", teamsAdministrationController.index)
 teamsAdministrationRoute.post("/", teamsAdministrationController.create)
-
+teamsAdministrationRoute.patch("/:id", teamsAdministrationController.update)
 
 export { teamsAdministrationRoute }
