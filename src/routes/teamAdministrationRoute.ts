@@ -7,6 +7,9 @@ const teamsAdministrationRoute = Router()
 const teamsAdministrationController = new TeamsAdministrationController
 
 teamsAdministrationRoute.use(ensureAuthenticated)
-teamsAdministrationRoute.post("/", verifyAuthorization(["admin"]), teamsAdministrationController.create)
+teamsAdministrationRoute.use(verifyAuthorization(["admin"]))
+
+teamsAdministrationRoute.post("/", teamsAdministrationController.create)
+
 
 export { teamsAdministrationRoute }
