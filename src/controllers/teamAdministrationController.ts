@@ -94,8 +94,20 @@ class TeamsAdministrationController {
                 description: true,
                 id: true,
                 createdAt: true,
-                updatedAt: true
-            }
+                updatedAt: true,
+                members: {
+                    select: {
+                        user: {
+                            select: {
+                                name: true,
+                                email: true,
+                                id: true
+                            }
+                        }
+                    }
+                }
+            },
+
         })
 
         return res.json({ showTeam })
@@ -116,13 +128,13 @@ class TeamsAdministrationController {
 
         const { id } = paramsSchema.parse(req.params)
         const team = await prisma.teams.findUnique({ where: { id } })
-        
+
         if (!team) {
             throw new AppError("Team ID does not exist", 404)
         }
-        
+
         const { name, description } = bodySchema.parse(req.body)
-        
+
         const update = await prisma.teams.update({
             data: {
                 name,
@@ -132,6 +144,20 @@ class TeamsAdministrationController {
         })
 
         return res.json({ update })
+    }
+
+    async delete(req: Request, res: Response, next: NextFunction) {
+        const paramsSchema = z.object({
+            id: z.string().uuid()
+        })
+
+        const { id } = paramsSchema.parse(req.params)
+
+        //return res.json(await prisma.teamMembers.findMany({ where: { id } }))
+
+        const remove = await prisma.teams.findMany({ where: { id } })
+
+        return res.json(remove)
     }
 }
 

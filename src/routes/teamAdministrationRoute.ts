@@ -13,6 +13,7 @@ teamsAdministrationRoute.get("/", teamsAdministrationController.index)
 teamsAdministrationRoute.post("/", teamsAdministrationController.create)
 teamsAdministrationRoute.get("/:id", teamsAdministrationController.show)
 teamsAdministrationRoute.patch("/:id", teamsAdministrationController.update)
+teamsAdministrationRoute.delete("/:id", teamsAdministrationController.delete)
 
 
 
