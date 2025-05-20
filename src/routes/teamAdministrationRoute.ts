@@ -1,9 +1,12 @@
-import { ensureAuthenticated } from "@/middlewares/ensureAuthenticated";
 import { TeamsAdministrationController } from "@/controllers/teamAdministrationController";
+import { ensureAuthenticated } from "@/middlewares/ensureAuthenticated";
+import { verifyAuthorization } from "@/middlewares/verifyAuthorization";
 import { Router } from "express";
 
-const teamsRoute = Router()
+const teamsAdministrationRoute = Router()
 const teamsAdministrationController = new TeamsAdministrationController
 
-teamsRoute.use(ensureAuthenticated)
-teamsRoute.post("/", teamsAdministrationController.create)
+teamsAdministrationRoute.use(ensureAuthenticated)
+teamsAdministrationRoute.post("/", verifyAuthorization(["admin"]), teamsAdministrationController.create)
+
+export { teamsAdministrationRoute }
