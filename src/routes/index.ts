@@ -9,4 +9,6 @@ routes.use("/register", registerRoute)
 routes.use("/sessions", sessionRoute)
 routes.use("/teams", teamsAdministrationRoute)
 
+
+
 export { routes }
