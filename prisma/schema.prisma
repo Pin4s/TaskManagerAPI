@@ -41,13 +41,14 @@ model Teams {
 
 model TeamMembers {
   id     String @id @default(uuid())
-  user   Users  @relation(fields: [userId], references: [id])
+  user   Users  @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String @map("user_id")
-  team   Teams  @relation(fields: [teamId], references: [id])
+  team   Teams  @relation(fields: [teamId], references: [id], onDelete: Cascade)
   teamId String @map("team_id")
 
   createdAt DateTime @default(now()) @map("created_at")
 
+  @@unique([userId, teamId])
   @@index([userId])
   @@index([teamId])
   @@map("team_members")
