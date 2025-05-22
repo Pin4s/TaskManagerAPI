@@ -12,5 +12,6 @@ taskRoute.use(verifyAuthorization(["admin"]))
 
 taskRoute.post("/", taskController.create)
 taskRoute.get("/", taskController.index)
+taskRoute.patch("/:id", taskController.update)
 
 export { taskRoute }

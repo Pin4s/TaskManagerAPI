@@ -2,8 +2,8 @@ import { Request, Response, NextFunction } from "express";
 import { AppError } from "@/utils/AppError";
 import { prisma } from "@/database/prisma";
 import z from "zod";
-import { teamsAdministrationRoute } from "@/routes/teamAdministrationRoute";
-import { Status } from "@prisma/client";
+import { Priority, Status } from "@prisma/client";
+import { PrismaClient } from "@prisma/client/extension";
 
 class TaskController {
     async create(req: Request, res: Response, next: NextFunction) {
@@ -77,6 +77,7 @@ class TaskController {
         try {
             const task = await prisma.tasks.findMany({
                 select: {
+                    id: true,
                     title: true,
                     description: true,
                     team: true,
@@ -96,8 +97,46 @@ class TaskController {
         }
     }
 
-    async update(req: Request, res: Response, next: NextFunction){
-        
+    async update(req: Request, res: Response, next: NextFunction) {
+        try {
+            const bodySchema = z.object({
+                title: z.string().min(3).max(200).optional(),
+                description: z.string().optional(),
+                status: z.enum([Status.pending, Status.inProgress, Status.completed]).optional(),
+                priority: z.enum([Priority.low, Priority.medium, Priority.high]).optional(),
+                assignedTo: z.string().uuid().optional(),
+            }).strict()
+
+            const paramsSchema = z.object({
+                id: z.string().uuid()
+            })
+
+            const { title, description, status, priority, assignedTo } = bodySchema.parse(req.body)
+            
+            const { id } = paramsSchema.parse(req.params)
+
+            if (Object.keys(req.body).length === 0) {
+                throw new AppError("No content to update", 400)
+            }
+            const dataToUpdate: PrismaClient = {};
+
+            
+
+            const update = await prisma.tasks.update({
+                where: { id }, data: {
+                    title,
+                    description,
+                    status,
+                    priority,
+                    assignedTo
+                }
+            })
+
+
+            return res.json(update)
+        } catch (error) {
+            next(error)
+        }
     }
 }
 
