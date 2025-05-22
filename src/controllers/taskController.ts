@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { AppError } from "@/utils/AppError";
 import { prisma } from "@/database/prisma";
-import z from "zod";
+import z, { object } from "zod";
 import { Priority, Status } from "@prisma/client";
 import { PrismaClient } from "@prisma/client/extension";
 
@@ -112,7 +112,7 @@ class TaskController {
             })
 
             const { title, description, status, priority, assignedTo } = bodySchema.parse(req.body)
-            
+
             const { id } = paramsSchema.parse(req.params)
 
             if (Object.keys(req.body).length === 0) {
@@ -120,7 +120,7 @@ class TaskController {
             }
             const dataToUpdate: PrismaClient = {};
 
-            
+
 
             const update = await prisma.tasks.update({
                 where: { id }, data: {
@@ -134,6 +134,23 @@ class TaskController {
 
 
             return res.json(update)
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    async remove(req: Request, res: Response, next: NextFunction) {
+        try {
+            const paramsSchema = z.object({
+                id: z.string().uuid()
+            })
+
+            const { id } = paramsSchema.parse(req.params)
+
+            const deletedTask = await prisma.tasks.delete({ where: { id } })
+
+            return res.json({ message: `Task deleted`, deletedTask })
+
         } catch (error) {
             next(error)
         }
