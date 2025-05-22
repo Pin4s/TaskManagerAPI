@@ -11,5 +11,6 @@ taskRoute.use(ensureAuthenticated)
 taskRoute.use(verifyAuthorization(["admin"]))
 
 taskRoute.post("/", taskController.create)
+taskRoute.get("/", taskController.index)
 
 export { taskRoute }

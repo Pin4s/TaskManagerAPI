@@ -72,6 +72,33 @@ class TaskController {
             next(error)
         }
     }
+
+    async index(req: Request, res: Response, next: NextFunction) {
+        try {
+            const task = await prisma.tasks.findMany({
+                select: {
+                    title: true,
+                    description: true,
+                    team: true,
+                    assigned: {
+                        select: {
+                            name: true,
+                            email: true,
+                            id: true
+                        }
+                    }
+                }
+            })
+
+            return res.json(task)
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    async update(req: Request, res: Response, next: NextFunction){
+        
+    }
 }
 
 export { TaskController }
