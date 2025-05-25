@@ -1,6 +1,5 @@
 import 'express-async-errors'
 import express from 'express'
-import { Request, Response } from 'express'
 import { routes } from './routes'
 import { errorHandler } from './middlewares/errorHandler'
 

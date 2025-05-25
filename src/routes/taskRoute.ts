@@ -8,7 +8,7 @@ const taskController = new TaskController
 const taskRoute = Router()
 
 taskRoute.use(ensureAuthenticated)
-taskRoute.use(verifyAuthorization(["admin"]))
+
 
 taskRoute.post("/", taskController.create)
 taskRoute.get("/", taskController.index)

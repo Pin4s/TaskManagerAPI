@@ -75,7 +75,31 @@ class TaskController {
 
     async index(req: Request, res: Response, next: NextFunction) {
         try {
-            const task = await prisma.tasks.findMany({
+            let whereCondition = {}
+
+            if (!req.user || typeof req.user.role === 'undefined') {
+                return res.status(401).json({ error: 'User not authenticated or role not defined.' })
+            }
+
+            if (req.user.role !== 'admin') {
+                const teamMemberships = await prisma.teamMembers.findMany({
+                    where: { userId: req.user.id },
+                    select: { teamId: true }
+                })
+
+                const teamIds = teamMemberships.map(tm => tm.teamId)
+
+                if (teamIds.length === 0) {
+                    return res.status(403).json({ error: 'Access denied. User is not associated with any team.' })
+                }
+
+                whereCondition = {
+                    teamId: { in: teamIds }
+                }
+            }
+
+            const tasks = await prisma.tasks.findMany({
+                where: whereCondition,
                 select: {
                     id: true,
                     title: true,
@@ -91,11 +115,13 @@ class TaskController {
                 }
             })
 
-            return res.json(task)
+            return res.json(tasks)
         } catch (error) {
             next(error)
         }
     }
+
+
 
     async update(req: Request, res: Response, next: NextFunction) {
         try {
@@ -104,7 +130,7 @@ class TaskController {
                 description: z.string().optional(),
                 status: z.enum([Status.pending, Status.inProgress, Status.completed]).optional(),
                 priority: z.enum([Priority.low, Priority.medium, Priority.high]).optional(),
-                assignedTo: z.string().uuid().optional(),
+                assignedTo: z.string().uuid().optional()
             }).strict()
 
             const paramsSchema = z.object({
@@ -112,18 +138,34 @@ class TaskController {
             })
 
             const { title, description, status, priority, assignedTo } = bodySchema.parse(req.body)
-
             const { id } = paramsSchema.parse(req.params)
 
             if (Object.keys(req.body).length === 0) {
                 throw new AppError("No content to update", 400)
             }
-            const dataToUpdate: PrismaClient = {};
 
+            const task = await prisma.tasks.findUnique({
+                where: { id },
+                select: { assignedTo: true }
+            })
 
+            if (!task) {
+                return res.status(404).json({ error: 'Task not found.' })
+            }
+
+            if (!req.user || typeof req.user.role === 'undefined') {
+                return res.status(401).json({ error: 'User not authenticated or role not defined.' })
+            }
+
+            if (req.user.role !== 'admin') {
+                if (task.assignedTo !== req.user.id) {
+                    return res.status(403).json({ error: 'Access denied. You cannot edit tasks of other users.' })
+                }
+            }
 
             const update = await prisma.tasks.update({
-                where: { id }, data: {
+                where: { id },
+                data: {
                     title,
                     description,
                     status,
@@ -132,12 +174,13 @@ class TaskController {
                 }
             })
 
-
             return res.json(update)
         } catch (error) {
             next(error)
         }
     }
+
+
 
     async remove(req: Request, res: Response, next: NextFunction) {
         try {

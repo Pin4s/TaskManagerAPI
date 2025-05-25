@@ -5,7 +5,7 @@ import { AppError } from "@/utils/AppError"
 import { hash } from "bcrypt"
 
 class RegisterController {
-    async create(req: Request, res: Response) {
+    async create(req: Request, res: Response, p0: NextFunction) {
 
         const bodySchema = z.object({
             name: z.string().trim().min(3),
