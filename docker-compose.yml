@@ -1,9 +1,14 @@
 services:
   postgres:
     image: "bitnami/postgresql:latest"
-    ports: 
+    ports:
       - "5434:5432"
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: taskmanager
+      POSTGRESQL_USERNAME: postgres
+      POSTGRESQL_PASSWORD: postgres
+      POSTGRESQL_DATABASE: taskmanager
+    volumes:
+      - pg_data:/bitnami/postgresql
+
+volumes:
+  pg_data:

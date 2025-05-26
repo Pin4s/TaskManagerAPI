@@ -1,38 +1,61 @@
-import { prisma } from '@/database/prisma'
-import { hash } from 'bcrypt';
-import { env } from '@/env';
+import { prisma } from '@/database/prisma';
 
-async function seed() {
-    const passwordHash = await hash(env.PASSWORD, 10);
+async function seedTeamsAndTasks() {
+  const teams = await prisma.teams.createMany({
+    data: [
+      { name: 'Time de Desenvolvimento', description: 'Responsável pelo desenvolvimento de software' },
+      { name: 'Time de Design', description: 'Responsável pelo design de produtos' },
+      { name: 'Time de Negociação', description: 'Responsável pelas negociações e vendas' },
+    ]
+  });
 
-    await prisma.users.createMany({
+  const allUsers = await prisma.users.findMany();
+  const allTeams = await prisma.teams.findMany();
 
-        // ADVISORY: This seeding script is intended for development and testing purposes.
-        // The password used for all seeded users is a common password defined in `env.PASSWORD`.
-        // This setup is for convenience in a development environment and should NOT reflect
-        // a production security model where unique, strong passwords are required.
+  // Distribuir usuários aleatoriamente
+  const shuffledUsers = allUsers.sort(() => 0.5 - Math.random());
 
-        data: [
-            { name: "Ana", email: "ana@email.com", password: passwordHash },
-            { name: "Bruno", email: "bruno@email.com", password: passwordHash },
-            { name: "Carlos", email: "carlos@email.com", password: passwordHash },
-            { name: "Daniela", email: "daniela@email.com", password: passwordHash },
-            { name: "Eduardo", email: "eduardo@email.com", password: passwordHash },
-            { name: "Fernanda", email: "fernanda@email.com", password: passwordHash },
-            { name: "Gustavo", email: "gustavo@email.com", password: passwordHash },
-            { name: "Helena", email: "helena@email.com", password: passwordHash },
-            { name: "Igor", email: "igor@email.com", password: passwordHash },
-            { name: "Juliana", email: "juliana@email.com", password: passwordHash },
-            { name: "Kevin", email: "kevin@email.com", password: passwordHash },
-            { name: "Larissa", email: "larissa@email.com", password: passwordHash },
-            { name: "Marcos", email: "marcos@email.com", password: passwordHash },
-            { name: "Natália", email: "natalia@email.com", password: passwordHash },
-            { name: "Otávio", email: "otavio@email.com", password: passwordHash },
-        ]
-    })
+  const teamMembers = allTeams.map((team, index) => {
+    const start = index * 5;
+    const end = start + 5;
+    const members = shuffledUsers.slice(start, end);
+
+    return members.map(user => ({
+      userId: user.id,
+      teamId: team.id
+    }));
+  }).flat();
+
+  // Criar TeamMembers
+  await prisma.teamMembers.createMany({
+    data: teamMembers
+  });
+
+  // Criar Tasks
+  const status = ['pending', 'inProgress', 'completed'] as const;
+  const priority = ['high', 'medium', 'low'] as const;
+
+  for (const team of allTeams) {
+    const members = teamMembers.filter(tm => tm.teamId === team.id);
+
+    for (let i = 0; i < 5; i++) {
+      const randomMember = members[Math.floor(Math.random() * members.length)];
+
+      await prisma.tasks.create({
+        data: {
+          title: `Task ${i + 1} - ${team.name}`,
+          description: `Descrição da Task ${i + 1} do ${team.name}`,
+          status: status[Math.floor(Math.random() * status.length)],
+          priority: priority[Math.floor(Math.random() * priority.length)],
+          assignedTo: randomMember.userId,
+          teamId: team.id
+        }
+      });
+    }
+  }
+
+  console.log('Teams, TeamMembers e Tasks seedados com sucesso!');
+  await prisma.$disconnect();
 }
 
-seed().then(() => {
-    console.log("Database seeded!")
-    prisma.$disconnect()
-})
+seedTeamsAndTasks();
