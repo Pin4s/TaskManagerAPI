@@ -13,12 +13,12 @@ Jest (automated tests)
 Render (deployment)
 
 ## 🎯 Main Features
-✅ JWT-based authentication and authorization
-✅ Full CRUD for tasks
-✅ Task assignment to specific team members
-✅ Task status and priority control
-✅ Team management with admin and member roles
-✅ Automated tests with Jest
+✅ JWT-based authentication and authorization<br>
+✅ Full CRUD for tasks<br>
+✅ Task assignment to specific team members<br>
+✅ Task status and priority control<br>
+✅ Team management with admin and member roles<br>
+✅ Automated tests with Jest<br>
 ✅ Production-ready deployment using Render and Docker
 <br><br><br><br>
 ## ⚙️ How to Run the Project
