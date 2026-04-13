@@ -42,7 +42,7 @@ Make sure your .env and prisma configs align with this.
 
 <strong> Clone the repository: </strong>
 <br>
-git clone github.com/Pin4s/TaskManagerAPI<br>
+git clone https://github.com/Pin4s/TaskManagerAPI<br>
 cd github.com/Pin4s/TaskManagerAPI
 <br>
 Set up the .env file with your environment variables.
@@ -54,7 +54,6 @@ npm install<br>
 
 <strong>Start the PostgreSQL container:<br></strong>
 docker-compose up -d<br>
-
 
 <strong>Run Prisma migrations:</strong>
 <br>
